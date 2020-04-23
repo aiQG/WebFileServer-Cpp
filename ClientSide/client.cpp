@@ -9,15 +9,6 @@
 
 int main()
 {
-    char fileName[100] = {0};
-    printf("input filename:\n");                        //输入新文件名称
-    gets(fileName);
-    FILE *fp = fopen(fileName, "wb");                   //二进制写(创建)
-    if(fp == NULL){
-        printf("create file fail\n");
-        exit(0);
-    }
-
 
     //创建套接字
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -34,17 +25,40 @@ int main()
     // char buffer[40];
     // read(sock, buffer, sizeof(buffer) - 1);
     // printf("Message form server: %s\n", buffer);
-    //循环接收数据, 直到传输完毕
+
+    //向服务器发送文件名
+    char fileName[100] = {0};
+    printf("input filename:\n"); //输入新文件名称
+    gets(fileName);
+    send(sock, fileName, strlen(fileName), 0);
+
+    //接收服务器结果
     char buffer[BUFFER_SIZE] = {0};
+    recv(sock, buffer, 1, 0);
+    if(*buffer == 'N'){
+        printf("Server does not exist this file\n");
+        close(sock);
+        exit(0);
+    }
+    //创建文件
+    FILE *fp = fopen(fileName, "wb");                   //二进制写(创建)
+    if (fp == NULL)
+    {
+        printf("create file fail\n");
+        exit(0);
+    }
+    sleep(1);                                           //防止粘包
+    //循环接收数据, 直到传输完毕
+    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲
     int nCount = 0;
-    while ((nCount = recv(sock, buffer, BUFFER_SIZE, 0)) > 0){
+    while ((nCount = recv(sock, buffer, BUFFER_SIZE, 0)) > 0)
+    {
         fwrite(buffer, nCount, 1, fp);
     }
     puts("Success\n");
-    
 
     fclose(fp);
-    //关闭套接字
+    //关闭套接字(发送FIN包)
     close(sock);
 
     return 0;
