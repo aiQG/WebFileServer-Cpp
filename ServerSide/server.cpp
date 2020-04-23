@@ -10,13 +10,6 @@
 
 int main(){
 
-    char filePath[20] = "server file.txt";
-    FILE *fp = fopen(filePath, "rb");                   //二进制读
-    if(fp == NULL){
-        printf("No such file\n");
-        exit(0);
-    }
-
 
     //创建套接字
     int serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -29,7 +22,7 @@ int main(){
     serv_addr.sin_port = htons(1234);                   //端口
     bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
 
-    //进入监听状态，等待用户发起请求
+    //进入监听状态，等待用户发起请求(缓冲区长度20)
     listen(serv_sock, 20);
 
     //接收客户端请求
@@ -37,10 +30,25 @@ int main(){
     socklen_t clnt_addr_size = sizeof(clnt_addr);
     int clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
 
+    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
+    //接收客户端发送的文件名
+    int recvLen = recv(clnt_sock, buffer, BUFFER_SIZE, 0);
+    //尝试读取文件
+    FILE *fp = fopen(buffer, "rb");                   //二进制读
+    if(fp == NULL){
+        printf("No such file\n");
+        char x = 'N';
+        send(clnt_sock, &x, 1, 0);                    //发送结果
+        close(clnt_sock);
+        close(serv_sock);
+        exit(0);
+    }
+
+
     //向客户端发送数据
     // char str[] = "Hello World!";
     // write(clnt_sock, str, sizeof(str));
-    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
+    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲区
     int nCount = 0;
     while ((nCount = fread(buffer, 1, BUFFER_SIZE, fp)) > 0){
         send(clnt_sock, buffer, nCount, 0);
