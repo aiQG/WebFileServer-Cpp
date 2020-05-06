@@ -5,6 +5,8 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include "menu.h"
+
 #define BUFFER_SIZE 1024
 
 int main()
