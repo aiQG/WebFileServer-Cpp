@@ -13,6 +13,10 @@ menu::menu(){
     this->selectedFunction = 0;
 }
 
+menu::~menu(){
+    close(this->sock);
+}
+
 void menu::showMenu(){
     std::cout << "功能选择:\n"
             << "1. 上传文件\n"
@@ -21,6 +25,7 @@ void menu::showMenu(){
             << "4. 删除文件\n"
             << "选择: ";
     std::cin >> this->selectedFunction;
+    std::cin.clear();
     return;
 }
 
@@ -35,4 +40,33 @@ bool menu::catFile(char* filename){
     } else {
         return true;
     }
+}
+
+int menu::download(char* filename){
+    if(!catFile(filename)) {
+        std::cout << "Server does not exist this file" 
+                << std::endl;
+        return -1;
+    }
+
+    //创建文件
+    FILE *fp = fopen(filename, "wb");                   //二进制写(创建)
+    if (fp == NULL)
+    {
+        printf("create file fail\n");
+        exit(0);
+    }
+    sleep(1);                                           //防止粘包
+    //循环接收数据, 直到传输完毕
+    char buffer[BUFFER_SIZE] = {0};
+    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲
+    int nCount = 0;
+    while ((nCount = recv(sock, buffer, BUFFER_SIZE, 0)) > 0)
+    {
+        fwrite(buffer, nCount, 1, fp);
+    }
+    fclose(fp);
+    std::cout << "Download success" << std::endl;
+
+    return 0;
 }

@@ -42,6 +42,9 @@ int main(){
         close(clnt_sock);
         close(serv_sock);
         exit(0);
+    } else {
+        char x = 'Y';
+        send(clnt_sock, &x, 1, 0);
     }
 
 

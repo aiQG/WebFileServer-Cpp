@@ -15,11 +15,15 @@ class menu{
     struct sockaddr_in serv_addr;
 
     // 客户端选择的功能
-    unsigned char selectedFunction;
 
 
     public:
     menu();
+    ~menu();
     void showMenu();
     bool catFile(char*);
+    int download(char*);
+
+
+    unsigned int selectedFunction;
 };
