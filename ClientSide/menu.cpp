@@ -26,6 +26,7 @@ void menu::showMenu(){
             << "选择: ";
     std::cin >> this->selectedFunction;
     std::cin.clear();
+    send(this->sock, &this->selectedFunction, 4, 0);
     return;
 }
 
