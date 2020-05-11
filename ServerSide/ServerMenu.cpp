@@ -71,3 +71,33 @@ int ServerMenu::sendFile(){
     recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
     return 0;
 }
+
+int ServerMenu::recvFile(){
+    char buffer[BUFFER_SIZE] = {0};                                 //缓冲区
+    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);    //接收文件名
+    if(*buffer == '\xFF'){
+        return -1;
+    }
+    
+    FILE *fp = fopen(buffer, "wb");
+    if(fp == NULL){
+        char x = 'N';
+        send(this->clnt_sock, &x, 1, 0);
+        std::cout << "Can not create file" << std::endl;
+        return -1;
+    } else {
+        char x = 'Y';
+        send(this->clnt_sock, &x, 1, 0);
+    }
+    sleep(1);                                                   // 防止粘包
+    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲
+    int nCount = 0;
+    while ((nCount = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0)) > 0)
+    {
+        fwrite(buffer, nCount, 1, fp);
+    }
+    fclose(fp);
+    std::cout << "Download success" << std::endl;
+
+    return 0;
+}

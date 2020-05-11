@@ -16,6 +16,7 @@ int main(){
 
     switch(SM.selectedFunction){
         case 1:
+        SM.recvFile();
         break;
 
         case 2:

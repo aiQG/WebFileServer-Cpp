@@ -23,7 +23,7 @@ class menu{
     void showMenu();
     bool catFile(char*);
     int download(char*);
-
+    int upload(char*);
 
     unsigned int selectedFunction;
 };

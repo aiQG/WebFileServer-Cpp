@@ -17,11 +17,13 @@ int main()
     char fileName[100] = {0};
     switch(Menu.selectedFunction){
         case 1:
+        printf("input filename:\n"); //要上传的文件名称
+        std::cin >> fileName;
+        Menu.upload(fileName);
         break;
 
         case 2:
         printf("input filename:\n"); //输入新文件名称
-        // gets(fileName);
         std::cin >> fileName;
         Menu.download(fileName);
 

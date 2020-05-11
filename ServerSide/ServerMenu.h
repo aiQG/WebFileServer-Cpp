@@ -24,7 +24,7 @@ public:
     ~ServerMenu();
     FILE* catFile(char*);
     int sendFile();
-    
+    int recvFile();
     
     int selectedFunction;
 };
