@@ -27,6 +27,15 @@ int main()
         std::cin >> fileName;
         Menu.download(fileName);
 
+        case 3:
+        printf("input filename:\n"); //输入要查询的文件名称
+        std::cin >> fileName;
+        if(Menu.catFile(fileName)){
+            std::cout << "exist" << std::endl;
+        } else {
+            std::cout << "not exist" << std::endl;
+        }
+        break;
         default:
         break;
     }

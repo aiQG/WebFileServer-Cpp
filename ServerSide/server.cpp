@@ -14,6 +14,7 @@ int main(){
 
     ServerMenu SM = ServerMenu();
 
+    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
     switch(SM.selectedFunction){
         case 1:
         SM.recvFile();
@@ -23,6 +24,11 @@ int main(){
         SM.sendFile();
         break;
 
+        case 3:
+        //接收客户端发送的文件名
+        recv(SM.clnt_sock, buffer, BUFFER_SIZE, 0);
+        SM.catFile(buffer);
+        break;
         default:
         break;
     }

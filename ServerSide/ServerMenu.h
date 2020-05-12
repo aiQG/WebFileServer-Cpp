@@ -16,10 +16,11 @@ private:
     struct sockaddr_in serv_addr;
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_size;
-    int clnt_sock;
 
 
 public:
+    int clnt_sock;
+    
     ServerMenu();
     ~ServerMenu();
     FILE* catFile(char*);
