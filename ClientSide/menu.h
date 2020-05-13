@@ -8,23 +8,23 @@
 #include <string>
 
 #define BUFFER_SIZE 1024
-class menu{
-    private:
+class menu
+{
+private:
     // 套接字
     int sock;
     struct sockaddr_in serv_addr;
 
     // 客户端选择的功能
 
-
-    public:
+public:
     menu();
     ~menu();
     void showMenu();
-    bool catFile(char*);
-    int download(char*);
-    int upload(char*);
-    int deleteFile(char*);
+    bool catFile(char *);
+    int download(char *);
+    int upload(char *);
+    int deleteFile(char *);
 
     unsigned int selectedFunction;
 };

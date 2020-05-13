@@ -1,6 +1,7 @@
 #include "ServerMenu.h"
 
-ServerMenu::ServerMenu(){
+ServerMenu::ServerMenu()
+{
     //创建套接字
     this->serv_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -22,7 +23,8 @@ ServerMenu::ServerMenu(){
     std::cout << "function: " << this->selectedFunction << std::endl;
 }
 
-ServerMenu::~ServerMenu(){
+ServerMenu::~ServerMenu()
+{
     char buffer[BUFFER_SIZE] = {0};
     //文件读取完毕, 断开输出流, 发送FIN包
     shutdown(this->clnt_sock, SHUT_WR);
@@ -34,33 +36,40 @@ ServerMenu::~ServerMenu(){
     close(serv_sock);
 }
 
-FILE* ServerMenu::catFile(char* filename){
+FILE *ServerMenu::catFile(char *filename)
+{
     //尝试读取文件
-    FILE *fp = fopen(filename, "rb");                   //二进制读
-    if(fp == NULL){
+    FILE *fp = fopen(filename, "rb"); //二进制读
+    if (fp == NULL)
+    {
         char x = 'N';
-        send(this->clnt_sock, &x, 1, 0);                    //发送结果
+        send(this->clnt_sock, &x, 1, 0); //发送结果
         return NULL;
-    } else {
+    }
+    else
+    {
         char x = 'Y';
         send(this->clnt_sock, &x, 1, 0);
         return fp;
     }
 }
 
-int ServerMenu::sendFile(){
-    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
+int ServerMenu::sendFile()
+{
+    char buffer[BUFFER_SIZE] = {0}; //缓冲区
     //接收客户端发送的文件名
     int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
-    FILE* fp = this->catFile(buffer);
-    if(fp == NULL){
+    FILE *fp = this->catFile(buffer);
+    if (fp == NULL)
+    {
         return -1;
     }
 
     //向客户端发送数据
-    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲区
+    memset(buffer, 0, BUFFER_SIZE); //清空缓冲区
     int nCount = 0;
-    while ((nCount = fread(buffer, 1, BUFFER_SIZE, fp)) > 0){
+    while ((nCount = fread(buffer, 1, BUFFER_SIZE, fp)) > 0)
+    {
         send(this->clnt_sock, buffer, nCount, 0);
     }
     fclose(fp);
@@ -72,25 +81,30 @@ int ServerMenu::sendFile(){
     return 0;
 }
 
-int ServerMenu::recvFile(){
-    char buffer[BUFFER_SIZE] = {0};                                 //缓冲区
-    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);    //接收文件名
-    if(*buffer == '\xFF'){
+int ServerMenu::recvFile()
+{
+    char buffer[BUFFER_SIZE] = {0};                              //缓冲区
+    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0); //接收文件名
+    if (*buffer == '\xFF')
+    {
         return -1;
     }
-    
+
     FILE *fp = fopen(buffer, "wb");
-    if(fp == NULL){
+    if (fp == NULL)
+    {
         char x = 'N';
         send(this->clnt_sock, &x, 1, 0);
         std::cout << "Can not create file" << std::endl;
         return -1;
-    } else {
+    }
+    else
+    {
         char x = 'Y';
         send(this->clnt_sock, &x, 1, 0);
     }
-    sleep(1);                                                   // 防止粘包
-    memset(buffer, 0, BUFFER_SIZE);                     //清空缓冲
+    sleep(1);                       // 防止粘包
+    memset(buffer, 0, BUFFER_SIZE); //清空缓冲
     int nCount = 0;
     while ((nCount = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0)) > 0)
     {
@@ -102,12 +116,14 @@ int ServerMenu::recvFile(){
     return 0;
 }
 
-int ServerMenu::deleteFile(){
-    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
+int ServerMenu::deleteFile()
+{
+    char buffer[BUFFER_SIZE] = {0}; //缓冲区
     //接收客户端发送的文件名
     int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
-    FILE* fp = this->catFile(buffer);
-    if(fp == NULL){
+    FILE *fp = this->catFile(buffer);
+    if (fp == NULL)
+    {
         return -1;
     }
     fclose(fp);
