@@ -26,6 +26,7 @@ public:
     FILE* catFile(char*);
     int sendFile();
     int recvFile();
+    int deleteFile();
     
     int selectedFunction;
 };

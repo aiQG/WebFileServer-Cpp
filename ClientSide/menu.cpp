@@ -46,7 +46,7 @@ bool menu::catFile(char* filename){
 int menu::download(char* filename){
     if(!catFile(filename)) {
         std::cout << "Server does not exist this file" 
-                << std::endl;
+            << std::endl;
         return -1;
     }
 
@@ -107,5 +107,15 @@ int menu::upload(char* filename){
     shutdown(this->sock, SHUT_WR);
     //阻塞等待客户端返回ACK包
     recv(this->sock, buffer, BUFFER_SIZE, 0);
+    return 0;
+}
+
+int menu::deleteFile(char* filename){
+    if(!catFile(filename)){
+        std::cout << "Server does not exist this file" 
+            << std::endl;
+        return -1;
+    }
+    std::cout << "success" << std::endl;
     return 0;
 }

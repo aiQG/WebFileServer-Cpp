@@ -36,6 +36,12 @@ int main()
             std::cout << "not exist" << std::endl;
         }
         break;
+
+        case 4:
+        std::cin >> fileName;
+        Menu.deleteFile(fileName);
+        break;
+        
         default:
         break;
     }

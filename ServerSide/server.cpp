@@ -29,6 +29,11 @@ int main(){
         recv(SM.clnt_sock, buffer, BUFFER_SIZE, 0);
         SM.catFile(buffer);
         break;
+
+        case 4:
+        SM.deleteFile();
+        break;
+        
         default:
         break;
     }

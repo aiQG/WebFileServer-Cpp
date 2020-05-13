@@ -24,6 +24,7 @@ class menu{
     bool catFile(char*);
     int download(char*);
     int upload(char*);
+    int deleteFile(char*);
 
     unsigned int selectedFunction;
 };

@@ -101,3 +101,19 @@ int ServerMenu::recvFile(){
 
     return 0;
 }
+
+int ServerMenu::deleteFile(){
+    char buffer[BUFFER_SIZE] = {0};                     //缓冲区
+    //接收客户端发送的文件名
+    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
+    FILE* fp = this->catFile(buffer);
+    if(fp == NULL){
+        return -1;
+    }
+    fclose(fp);
+    char cmd[BUFFER_SIZE + 3] = {0};
+    strcpy(cmd, "rm ");
+    strcat(cmd, buffer);
+    system(cmd);
+    return 0;
+}
