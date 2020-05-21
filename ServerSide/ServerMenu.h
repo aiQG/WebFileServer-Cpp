@@ -1,4 +1,4 @@
-// #include <stdio.h>
+#include <stdio.h>
 // #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <string>
+#include <thread>
 
 #define BUFFER_SIZE 1024
 
@@ -18,15 +19,19 @@ private:
     struct sockaddr_in clnt_addr;
     socklen_t clnt_addr_size;
 
-public:
     int clnt_sock;
+    int selectedFunction;
 
+    void runThread(int, int);
+    void closeThread(int);
+
+    FILE *catFile(char *, int);
+    int sendFile(int);
+    int recvFile(int);
+    int deleteFile(int);
+
+public:
     ServerMenu();
     ~ServerMenu();
-    FILE *catFile(char *);
-    int sendFile();
-    int recvFile();
-    int deleteFile();
 
-    int selectedFunction;
 };

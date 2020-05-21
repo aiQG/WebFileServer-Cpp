@@ -43,6 +43,7 @@ int main()
         break;
 
     case 4:
+        printf("input filename:\n"); //输入要删除的文件名称
         std::cin >> fileName;
         Menu.deleteFile(fileName);
         break;
@@ -50,7 +51,7 @@ int main()
     default:
         break;
     }
-
+    // exit(0);
     //关闭套接字(发送FIN包)
     Menu.~menu();
 

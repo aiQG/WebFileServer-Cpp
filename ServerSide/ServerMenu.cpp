@@ -15,12 +15,62 @@ ServerMenu::ServerMenu()
     //进入监听状态，等待用户发起请求(缓冲区长度20)
     listen(this->serv_sock, 20);
 
-    //接收客户端请求
-    this->clnt_addr_size = sizeof(this->clnt_addr);
-    this->clnt_sock = accept(this->serv_sock, (struct sockaddr *)&this->clnt_addr, &this->clnt_addr_size);
+    while (1)
+    {
+        //接收客户端请求
+        this->clnt_addr_size = sizeof(this->clnt_addr);
+        this->clnt_sock = accept(this->serv_sock, (struct sockaddr *)&this->clnt_addr, &this->clnt_addr_size);
 
-    recv(this->clnt_sock, &this->selectedFunction, 4, 0);
-    std::cout << "function: " << this->selectedFunction << std::endl;
+        recv(this->clnt_sock, &this->selectedFunction, 4, 0);
+        std::cout << "function: " << this->selectedFunction << std::endl;
+
+        std::thread t(&ServerMenu::runThread, this, this->clnt_sock, this->selectedFunction);
+        t.detach();
+        // runThread(this->clnt_sock, this->selectedFunction);
+    }
+}
+
+void ServerMenu::runThread(int cSocket, int selFunc)
+{
+    char buffer[BUFFER_SIZE] = {0}; //缓冲区
+    switch (selFunc)
+    {
+    case 1:
+        this->recvFile(cSocket);
+        break;
+
+    case 2:
+        this->sendFile(cSocket);
+        break;
+
+    case 3:
+        //接收客户端发送的文件名
+        recv(cSocket, buffer, BUFFER_SIZE, 0);
+        this->catFile(buffer, cSocket);
+        break;
+
+    case 4:
+        this->deleteFile(cSocket);
+        break;
+
+    default:
+        break;
+    }
+    //关闭当前连接
+    this->closeThread(cSocket);
+    return;
+}
+
+void ServerMenu::closeThread(int cSocket)
+{
+    char buffer[BUFFER_SIZE] = {0};
+    //文件读取完毕, 断开输出流, 发送FIN包
+    shutdown(cSocket, SHUT_WR);
+    //阻塞等待客户端返回ACK包
+    recv(cSocket, buffer, BUFFER_SIZE, 0);
+    //关闭套接字
+    close(cSocket);
+    return;
 }
 
 ServerMenu::~ServerMenu()
@@ -32,34 +82,34 @@ ServerMenu::~ServerMenu()
     recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
 
     //关闭套接字
-    close(clnt_sock);
-    close(serv_sock);
+    close(this->clnt_sock);
+    close(this->serv_sock);
 }
 
-FILE *ServerMenu::catFile(char *filename)
+FILE *ServerMenu::catFile(char *filename, int cSocket)
 {
     //尝试读取文件
     FILE *fp = fopen(filename, "rb"); //二进制读
     if (fp == NULL)
     {
         char x = 'N';
-        send(this->clnt_sock, &x, 1, 0); //发送结果
+        send(cSocket, &x, 1, 0); //发送结果
         return NULL;
     }
     else
     {
         char x = 'Y';
-        send(this->clnt_sock, &x, 1, 0);
+        send(cSocket, &x, 1, 0);
         return fp;
     }
 }
 
-int ServerMenu::sendFile()
+int ServerMenu::sendFile(int cSocket)
 {
     char buffer[BUFFER_SIZE] = {0}; //缓冲区
     //接收客户端发送的文件名
-    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
-    FILE *fp = this->catFile(buffer);
+    int recvLen = recv(cSocket, buffer, BUFFER_SIZE, 0);
+    FILE *fp = this->catFile(buffer, cSocket);
     if (fp == NULL)
     {
         return -1;
@@ -70,21 +120,21 @@ int ServerMenu::sendFile()
     int nCount = 0;
     while ((nCount = fread(buffer, 1, BUFFER_SIZE, fp)) > 0)
     {
-        send(this->clnt_sock, buffer, nCount, 0);
+        send(cSocket, buffer, nCount, 0);
     }
     fclose(fp);
 
     //文件读取完毕, 断开输出流, 发送FIN包
-    shutdown(this->clnt_sock, SHUT_WR);
+    shutdown(cSocket, SHUT_WR);
     //阻塞等待客户端返回ACK包
-    recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
+    recv(cSocket, buffer, BUFFER_SIZE, 0);
     return 0;
 }
 
-int ServerMenu::recvFile()
+int ServerMenu::recvFile(int cSocket)
 {
-    char buffer[BUFFER_SIZE] = {0};                              //缓冲区
-    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0); //接收文件名
+    char buffer[BUFFER_SIZE] = {0};                      //缓冲区
+    int recvLen = recv(cSocket, buffer, BUFFER_SIZE, 0); //接收文件名
     if (*buffer == '\xFF')
     {
         return -1;
@@ -94,19 +144,19 @@ int ServerMenu::recvFile()
     if (fp == NULL)
     {
         char x = 'N';
-        send(this->clnt_sock, &x, 1, 0);
+        send(cSocket, &x, 1, 0);
         std::cout << "Can not create file" << std::endl;
         return -1;
     }
     else
     {
         char x = 'Y';
-        send(this->clnt_sock, &x, 1, 0);
+        send(cSocket, &x, 1, 0);
     }
     sleep(1);                       // 防止粘包
     memset(buffer, 0, BUFFER_SIZE); //清空缓冲
     int nCount = 0;
-    while ((nCount = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0)) > 0)
+    while ((nCount = recv(cSocket, buffer, BUFFER_SIZE, 0)) > 0)
     {
         fwrite(buffer, nCount, 1, fp);
     }
@@ -116,12 +166,12 @@ int ServerMenu::recvFile()
     return 0;
 }
 
-int ServerMenu::deleteFile()
+int ServerMenu::deleteFile(int cSocket)
 {
     char buffer[BUFFER_SIZE] = {0}; //缓冲区
     //接收客户端发送的文件名
-    int recvLen = recv(this->clnt_sock, buffer, BUFFER_SIZE, 0);
-    FILE *fp = this->catFile(buffer);
+    int recvLen = recv(cSocket, buffer, BUFFER_SIZE, 0);
+    FILE *fp = this->catFile(buffer, cSocket);
     if (fp == NULL)
     {
         return -1;
